@@ -83,6 +83,33 @@ function Environment.create(): { [string]: any }
 		return fn(table.unpack(args))
 	end
 
+	env["append"] = function(...: { any }): { any }
+		local result = {}
+		for _, lst in ipairs({...}) do
+			if type(lst) == "table" then
+				for _, v in ipairs(lst) do table.insert(result, v) end
+			end
+		end
+		return result
+	end
+
+	env["nth"] = function(lst: { any }, n: number): any
+		if type(lst) == "table" and lst[n] ~= nil then
+			return lst[n]
+		end
+		return nil
+	end
+
+	env["list?"] = function(val: any): boolean
+		if type(val) == "table" then
+			local rawType = rawget(val, "type")
+			if rawType == "list" then return true end
+			if #val > 0 and rawget(val, 1) ~= nil then return true end
+			if rawget(val, "car") ~= nil or rawget(val, "cdr") ~= nil then return true end
+		end
+		return false
+	end
+
 	env["cons"] = function(car: any, cdr: any): any
 		if cdr == nil then
 			return {car}
@@ -121,8 +148,9 @@ function Environment.create(): { [string]: any }
 	env["null?"] = function(lst: any): boolean
 		if lst == nil then return true end
 		if type(lst) == "table" then
-			if rawget(lst, "car") ~= nil or rawget(lst, "cdr") ~= nil then return false end
-			if #lst == 0 then return true end
+			local rawType = rawget(lst, "type")
+			if rawType == "nil" then return true end
+			if #lst == 0 and rawget(lst, "car") == nil and rawget(lst, "cdr") == nil then return true end
 		end
 		return false
 	end
