@@ -1036,8 +1036,23 @@ function CEKMachine.evaluate(ast: any, globalEnv: { [string]: any }): any
 
 			elseif frame.type == "for-loop" then
 				local loopFrame = frame
-				loopFrame.initDone = true
-				table.insert(kStack, { type = "for-check", env = loopFrame.env, cond = loopFrame.cond, step = loopFrame.step, body = loopFrame.body })
+				local localEnv = {}
+				setmetatable(localEnv, { __index = loopFrame.env })
+				local varName
+				if type(loopFrame.init) == "table" and loopFrame.init.type == "symbol" then
+					varName = loopFrame.init.name
+				elseif type(loopFrame.init) == "table" and loopFrame.init.type == "list" then
+					varName = loopFrame.init.elements[1].name
+				end
+				localEnv[varName] = val
+				table.insert(kStack, {
+					type = "for-check",
+					env = localEnv,
+					cond = loopFrame.cond,
+					step = loopFrame.step,
+					body = loopFrame.body,
+					varName = varName
+				})
 				control = loopFrame.cond
 
 			elseif frame.type == "for-check" then
@@ -1051,7 +1066,17 @@ function CEKMachine.evaluate(ast: any, globalEnv: { [string]: any }): any
 
 			elseif frame.type == "for-step" then
 				local stepFrame = frame
-				table.insert(kStack, { type = "for-check", env = stepFrame.env, cond = stepFrame.cond, step = stepFrame.step, body = stepFrame.body })
+				local localEnv = {}
+				setmetatable(localEnv, { __index = stepFrame.env })
+				localEnv[stepFrame.varName] = val
+				table.insert(kStack, {
+					type = "for-check",
+					env = localEnv,
+					cond = stepFrame.cond,
+					step = stepFrame.step,
+					body = stepFrame.body,
+					varName = stepFrame.varName
+				})
 				control = stepFrame.step
 
 			elseif frame.type == "while-loop" then
