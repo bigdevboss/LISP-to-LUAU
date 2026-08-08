@@ -2,10 +2,6 @@
 
 A Lisp dialect interpreter running inside Roblox. It has a reader (tokenizer + parser), a CEK machine evaluator with hygienic `syntax-rules` macros, and a Roblox interop layer that exposes engine APIs as Lisp builtins. Ships with a terminal GUI with server/client execution modes.
 
-## What it actually is
-
-Not a transpiler. The name says "translator" but the code is an interpreter: Lisp source gets tokenized, parsed into an AST, and evaluated by the CEK machine at runtime inside Roblox. The "translation" part is that you can write game logic in Lisp syntax instead of Luau.
-
 ## Components
 
 ### Reader (`Reader.luau`)
